@@ -41,6 +41,7 @@
 !libpi.a
 !libpisd.a
 !libpi/modules/*.o
+!libref_pi.a
 
 # Mac
 .DS_Store

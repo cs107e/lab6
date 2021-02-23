@@ -31,15 +31,15 @@ void fb_init(unsigned int width, unsigned int height, unsigned int depth_in_byte
     fb.x_offset = 0;
     fb.y_offset = 0;
 
-    // the manual requires we to set these value to 0
-    // the GPU will return new values
+    // the manual states that we must set these value to 0
+    // the GPU will return new values in its response
     fb.pitch = 0;
     fb.framebuffer = 0;
     fb.total_bytes = 0;
 
     // Send address of fb struct to the GPU as message
-    mailbox_write(MAILBOX_FRAMEBUFFER, (unsigned int)&fb);
-    assert(mailbox_read(MAILBOX_FRAMEBUFFER) == 0); // confirm successful config
+    bool mailbox_success = mailbox_request(MAILBOX_FRAMEBUFFER, (unsigned int)&fb);
+    assert(mailbox_success); // confirm successful config
 
     printf("Framebuffer successfully configured.\n");
     printf("physical size = %d x %d\n", fb.width , fb.height);

@@ -11,7 +11,7 @@ LDLIBS = -lpi -lgcc
 # `volatile` modifier on the framebuffer or mailbox.
 OBJ_NVOL = (MODULES:.o=-not-volatile.o)
 
-all : $(NAME).bin mailbox.list mailbox-not-volatile.list 
+all : $(NAME).bin mailbox.list mailbox-not-volatile.list
 
 %.bin: %.elf
 	arm-none-eabi-objcopy $< -O binary $@
@@ -34,13 +34,13 @@ all : $(NAME).bin mailbox.list mailbox-not-volatile.list
 %.list: %.o
 	arm-none-eabi-objdump --no-show-raw-insn -d $< > $@
 
-install: $(NAME).bin
-	rpi-install.py -p $<
+run: $(NAME).bin
+	rpi-run.py -p $<
 
 clean:
 	rm -f *.o *.bin *.elf *.list *~
 
-.PHONY: all clean install
+.PHONY: all clean run
 .PRECIOUS: %.elf %.o
 
 # empty recipe used to disable built-in rules for native build

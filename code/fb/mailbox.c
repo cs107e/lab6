@@ -1,3 +1,13 @@
+/*
+ * Interface to Raspberry Pi mailbox system, used by libpi to interact
+ * with GPU. Note that this interface has been deprecated and so future
+ * code should use the property interface instead.
+ *
+ * Author: Pat Hanrahan <hanrahan@cs.stanford.edu>
+ * Author: Philip Levis <pal@cs.stanford.edu>
+ * Date: 6/20/17
+ */
+
 #include "mailbox.h"
 
 #define MAILBOX_BASE     0x2000B880
@@ -26,17 +36,26 @@ typedef struct {
 // Read disassembly in .list files to see!
 #ifdef NVOLATILE
 static mailbox_t *mailbox = (mailbox_t *)MAILBOX_BASE;
-#else 
+#else
 static volatile mailbox_t *mailbox = (mailbox_t *)MAILBOX_BASE;
 #endif
 
-void mailbox_write(unsigned int channel, unsigned int addr)
-{
+bool mailbox_request(unsigned int channel, unsigned int addr) {
+    if (!mailbox_write(channel, addr))
+        return false;
+    return (mailbox_read(channel) == 0); // returned data is 0 on success
+}
+
+bool mailbox_write(unsigned int channel, unsigned int addr) {
     // mailbox has a maximum of 16 channels
-    if ( channel >= MAILBOX_MAXCHANNEL ) return;
+    if (channel >= MAILBOX_MAXCHANNEL) {
+        return false;
+    }
 
     // addr must be a multiple of 16
-    if ( addr & 0xF ) return;
+    if (addr & 0xF) {
+        return false;
+    }
 
     // wait until mailbox is not full ...
     while (mailbox->status & MAILBOX_FULL) ;
@@ -44,23 +63,25 @@ void mailbox_write(unsigned int channel, unsigned int addr)
     // set GPU_NOCACHE bit so that the GPU does not cache the memory
     addr |= GPU_NOCACHE;
 
-    // mail the addr to the channel
-    // why can we add the channel to the addr?
+    // addr is a multiple of 16, so the low 4 bits are zeros
+    // 4-bit channel number is stuffed into those low bits
     mailbox->write = addr + channel;
+    return true;
 }
 
-unsigned int mailbox_read(unsigned int channel)
-{
-    if ( channel >= MAILBOX_MAXCHANNEL ) return 1;
+unsigned int mailbox_read(unsigned int channel) {
+    if (channel >= MAILBOX_MAXCHANNEL) {
+        return 1;
+    }
 
     while (1) {
         // wait until mailbox is not empty ...
         while (mailbox->status & MAILBOX_EMPTY) ;
         // read the data, low 4 bits are channel, upper 28 are result
         unsigned int data = mailbox->read;
-        if ((data & 0xF) == channel)  // if this message is for our channel
+        if ((data & 0xF) == channel) { // if this message is for our channel
             return (data >> 4);
+        }
     }
     return 1;
 }
-

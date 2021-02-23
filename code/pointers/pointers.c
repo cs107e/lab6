@@ -6,23 +6,23 @@ void main(void)
     uart_init();
 
     // Basic pointer review: What's the difference between incrementing a `char
-    // *` and a `unsigned int *`?
+    // *` and a `int *`?
     printf("\nPointer review:\n");
     printf("===============\n");
-    char *char_ptr = "Hello";
-    unsigned int uint_arr[] = {0, 1, 2};
-    unsigned int *uint_ptr = uint_arr;
+    char *cptr = "Hello";
+    int iarray[] = {0, 1, 2};
+    int *iptr = iarray;
 
-    printf("char_ptr   = %p\n", char_ptr);
-    printf("char_ptr+1 = %p\n", char_ptr + 1);
+    printf("cptr   = %p\n", cptr);
+    printf("cptr+1 = %p\n", cptr + 1);
 
-    printf("uint_ptr   = %p\n", uint_ptr);
-    printf("uint_ptr+1 = %p\n", uint_ptr + 1);
+    printf("iptr   = %p\n", iptr);
+    printf("iptr+1 = %p\n", iptr + 1);
 
-    // What happens if we walk off the end of the array?
-    printf("\nWalking off the end of the array uint_arr: \n");
-    for (int i = 0; i < 4; ++i) {
-        printf("[%d] = %x ", i, uint_ptr[i]);
+    // What happens if we access elements beyond end of the array?
+    printf("\nAccess array element out of bounds: \n");
+    for (int i = 0; i < 5; ++i) {
+        printf("[%d] @%p = %x\n", i, iptr + i, iptr[i]);
     }
     printf("\n");
 
@@ -30,7 +30,7 @@ void main(void)
     printf("======================================\n");
     int f[] = { 0, 1 };
     int g[] = { 2, 3, 4 };
-    // will the following declaration work?
+    // the declaration commented out below does not work, why not?
     //int *h = {2, 3, 4};
     printf("f = %p\n", f);
     printf("g = %p\n", g);
@@ -58,6 +58,7 @@ void main(void)
 
     printf("\nMulti-dimensional arrays and pointers\n");
     printf("=====================================\n");
+    // how does the 2-d array `a` compare to layout of array of pointers `p` above?
     int a[2][2] = { {0, 1}, {2, 3} };
     int *b = &a[0][0];
     int (*c)[2] = a;

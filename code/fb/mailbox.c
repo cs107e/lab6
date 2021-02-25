@@ -32,8 +32,14 @@ typedef struct {
 } mailbox_t;
 
 
-// What is difference in generated code if mailbox qualfied volatile versus not?
-// Read disassembly in .list files to see!
+// If the mailbox memory is not qualified as volatile, the compiler may
+// take liberties in optimizing the code that can be problematic.
+// Below we use the preprocessor to compile two versions of mailbox:
+// one where mailbox is properly qualified as volatile and a second
+// (buggy) one that does not. Use `make` to generate both versions
+// and compare the assembly instructions in the two .list files. Can
+// you spot the problems introduced by the compiler's optimizations
+// of the non-volatile version?
 #ifdef NVOLATILE
 static mailbox_t *mailbox = (mailbox_t *)MAILBOX_BASE;
 #else
@@ -65,7 +71,7 @@ bool mailbox_write(unsigned int channel, unsigned int addr) {
 
     // addr is a multiple of 16, so the low 4 bits are zeros
     // 4-bit channel number is stuffed into those low bits
-    mailbox->write = addr + channel;
+    mailbox->write = addr | channel;
     return true;
 }
 

@@ -79,7 +79,9 @@ Open the `grid.c` file in your text editor and modify the program in the followi
   *Remember from lecture that the B (blue) in BGRA is the lowest byte.*
 
 3. Change the grid code to draw a checkerboard pattern 
-   (alternating filled black and white squares).
+   (alternating filled black and white squares). Hint: define a helper function `draw_rect` that takes the bounds of a rectangle and iterates over all locations within the bounds, calling `draw_pixel` on each. This helper is a good start on a routine you will implement for assignment 6. :-)
+
+Remember that C has no bounds-checking on array indexes. Writing to an index outside the bounds of the framebuffer will corrupt that data at that location. The memory neighboring the framebuffer is in use by the GPU and if you corrupt it, the transgression is punished in mysterious ways (screen garbage, a surprise reshowing of the Pi test pattern, lockup of GPU that requires reset of Pi). If you observe a consequence of this ilk, it suggests you need to review how your code accesses the framebuffer memory.
 
 Check-in with us and show off your checkerboard. [^1]
 
@@ -140,9 +142,7 @@ The message passing between CPU to GPU uses the functions `mailbox_write` and `m
    1. Why does the code need each of the checks for whether the mailbox is `EMPTY`
       or `FULL`? What might go wrong if these checks weren't there?
 
-   2. Why can we add the `addr` and `channel` in `mailbox_write`?
-      Could we also `|` them together?
-      Which bit positions are used for the `addr` and which are used for the `channel`?
+   2.  `mailbox_write` combines `addr` and `channel` using a bitwise `|`. Which bit positions are used for the `addr` and which are used for the `channel`?
 
    3.  Sketch a memory map diagram of where `fb`, `mailbox`, and the framebuffer live.
       Mark where the CPU's memory and GPU's memory are, as well as
@@ -154,7 +154,7 @@ The message passing between CPU to GPU uses the functions `mailbox_write` and `m
       as `volatile`, the other that does not.
       Open the two listing files `mailbox.list` to `mailbox-not-volatile.list` and compare to see the difference in the generated assembly. What happens to the loop that waits until not full/empty? What would be the observed behavior of executing the code that doesn't use `volatile` ?  
 
-You're ready to answer the check-in questions about framebuffers: [^2] [^3] [^4].
+You're ready to answer the check-in questions about framebuffers: [^2] [^3].
 
 ### 4. Multi-dimensional arrays
 
@@ -178,7 +178,7 @@ To start, here is a quick self-test:
 
   You may find the **[cdecl tool](http://cdecl.org/)** helpful in demystifying a complex C declaration.
 
-Inspect the code in `code/pointers/pointers.c`. Compile the program using `make`, run it on your Pi, and interpret the results. Ask questions about anything that doesn't make sense to you and check-in with us to confirm your understanding. [^5]
+Inspect the code in `code/pointers/pointers.c`. Compile the program using `make`, run it on your Pi, and interpret the results. Ask questions about anything that doesn't make sense to you and check-in with us to confirm your understanding. [^4]
 
 ### 5. Fonts
 
@@ -238,7 +238,7 @@ since you will use it in the next assignment.
 
 Now change to the directory `code/banner` and review the code in `banner.c`. This program calls `font_get_glyph` to store the glyph image into `buf`. The code then wants to go on to access `buf` as a 2-d array through the variable named  `img`, but `img` is missing its declaration and initialization. Read and follow the instructions marked `TODO:` to fix this issue. Compile and run and you'll get an ascii banner that prints letters to the terminal using your Pi's font - neat!
 
-You're ready to answer the final check-in [^6].
+You're ready to answer the final check-in [^5].
 
 ## Check in with TA
 
@@ -248,16 +248,14 @@ Before leaving the lab, check in with a TA and discuss any challenges to answeri
 
 [^2]: What happens if `mailbox_t mailbox` is not tagged as `volatile`?
 
-[^3]: Why is it valid to use `|` to combine the `addr` and `channel` in `mailbox_write`?
+[^3]: Show off your memory map diagram! Where does the stack sit, relative to the framebuffer? Where do the GPIO registers sit relative to the mailbox? 
 
-[^4]: Show off your memory map diagram! Where does the stack sit, relative to the framebuffer? Where do the GPIO registers sit relative to the mailbox? 
-
-[^5]: What is the difference between the following two lines of code?
+[^4]: What is the difference between the following two lines of code?
     ```c
 char *a  = "Hello, world\n";
 char b[] = "Hello, world\n";
     ```
-[^6]: Show the declaration for `img` needed for the `banner.c` program.
+[^5]: Show the declaration for `img` needed for the `banner.c` program.
 
 
 
